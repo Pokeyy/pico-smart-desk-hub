@@ -5,6 +5,7 @@
 #include "lwip/err.h"
 #include "lwip/pbuf.h"
 #include "lwip/altcp.h"
+#include "queue.h"
 
 #define HOST "api.open-meteo.com"
 #define URL_REQUEST "/v1/forecast?latitude=34.22&longitude=-119.04" \
@@ -22,9 +23,15 @@ typedef enum {
     WEATHER_ERR_MISSING     = -4,
 } weather_err_t;
 
-void weather_task(void *pvParameters);
+typedef struct {
+    int temps_max[3];
+    int temps_min[3];
+} weather_data_t;
+
+extern QueueHandle_t weather_queue;
+
+weather_err_t fetch_weather(weather_data_t *data);
 void draw_weather_screen();
-int the_weather();
-weather_err_t fetch_weather(int temps_max[3], int temps_min[3]);
+void weather_task (void *pvParameters);
 err_t my_recv_fn(void *arg, struct altcp_pcb *conn, struct pbuf *p, err_t err);
 #endif

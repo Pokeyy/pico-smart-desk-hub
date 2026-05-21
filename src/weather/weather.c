@@ -14,11 +14,28 @@
 static char buffer_weather[2048];
 static int buffer_index = 0;
 
-void weather_task(void *pvParameters) { 
-    the_weather(); 
+void weather_task(void *pvParameters) {
+    int attempts;
+    xEventGroupWaitBits(wifi_group, 0x01, pdFALSE, pdTRUE, portMAX_DELAY);
+    while (true) {
+        attempts = 0;
+        while (attempts < 5) {
+            weather_data_t weather_data;
+            if (fetch_weather(&weather_data) == WEATHER_OK) {
+                xQueueOverwrite(weather_queue, &weather_data);
+                break;
+            }
+            else {
+                attempts++;
+                vTaskDelay(pdMS_TO_TICKS(3000));
+            }
+            
+        }
+        vTaskDelay(pdMS_TO_TICKS(1800000));
+    }
 }
 
-weather_err_t fetch_weather(int temps_max[3], int temps_min[3])
+weather_err_t fetch_weather(weather_data_t *data)
 {
     buffer_index = 0;
     memset(buffer_weather, 0, sizeof(buffer_weather));
@@ -72,7 +89,7 @@ weather_err_t fetch_weather(int temps_max[3], int temps_min[3])
     {
         printf("temperature arrays missing\n");
         cJSON_Delete(root);
-        return -1;
+        return WEATHER_ERR_HTTP;
     }
 
     for (int i = 0; i < 3; i++)
@@ -81,70 +98,69 @@ weather_err_t fetch_weather(int temps_max[3], int temps_min[3])
         cJSON *minItem = cJSON_GetArrayItem(minArr, i);
 
         // Open-Meteo returns numbers, not strings
-        temps_max[i] = cJSON_IsNumber(maxItem) ? (int)maxItem->valuedouble : -1;
-        temps_min[i] = cJSON_IsNumber(minItem) ? (int)minItem->valuedouble : -1;
+        data->temps_max[i] = cJSON_IsNumber(maxItem) ? (int)maxItem->valuedouble : -1;
+        data->temps_min[i] = cJSON_IsNumber(minItem) ? (int)minItem->valuedouble : -1;
 
-        printf("Day %d: High %dF / Low %dF\n", i, temps_max[i], temps_min[i]);
+        printf("Day %d: High %dF / Low %dF\n", i, data->temps_max[i], data->temps_min[i]);
     }
 
-        
+    
     cJSON_Delete(root);
     return 0;  // don't use `result` from http call — it may be non-zero on clean close
 }
 
-void weather_task(void *pvParameters)
-{
-    printf("the_weather called\n");
-    int temps_max[3], temps_min[3];
-    char temp_str[16];
+// void draw_weather_task(void *pvParameters)
+// {
+//     printf("the_weather called\n");
+//     int temps_max[3], temps_min[3];
+//     char temp_str[16];
 
-    draw_weather_screen();
-    xEventGroupWaitBits(wifi_group, 0x01, pdFALSE, pdTRUE, pdMS_TO_TICKS(2000));
-    while (true)
-    {
+//     draw_weather_screen();
+//     xEventGroupWaitBits(wifi_group, 0x01, pdFALSE, pdTRUE, portMAX_DELAY);
+//     while (true)
+//     {
 
-        int attempt = 0;
-        int result = -1;
+//         int attempt = 0;
+//         int result = -1;
 
 
-        draw_string(5, 100, "Updating...", ST7735_BLACK, ST7735_WHITE, 1);
-        while (attempt < 5)
-        {
-            result = fetch_weather(temps_max, temps_min);
-            if (result == WEATHER_OK)
-                break;
-            attempt++;
-            if (attempt < 5) vTaskDelay(pdMS_TO_TICKS(2000)); // only sleep if actually retrying
-        }
-        fill_rectangle(5, 100, 85, 9, ST7735_WHITE);
+//         draw_string(5, 100, "Updating...", ST7735_BLACK, ST7735_WHITE, 1);
+//         while (attempt < 5)
+//         {
+//             result = fetch_weather(data->temps_max, temps_min);
+//             if (result == WEATHER_OK)
+//                 break;
+//             attempt++;
+//             if (attempt < 5) vTaskDelay(pdMS_TO_TICKS(2000)); // only sleep if actually retrying
+//         }
+//         fill_rectangle(5, 100, 85, 9, ST7735_WHITE);
 
-        if (result == WEATHER_OK)
-        {
-            printf("Stack HWM: %d words\n", uxTaskGetStackHighWaterMark(NULL));
-            for (int i = 0; i < 3; i++)
-            {
-                char line[24];
-                snprintf(line, sizeof(line), "D%d %dF/%dF", i+1, temps_max[i], temps_min[i]);
-                draw_string(10, 55 + (i * 20), line, ST7735_BLACK, ST7735_WHITE, 1);
-            }
-        }
-        else
-        {
-            switch (result) {
-                case WEATHER_ERR_HTTP:    printf("HTTP request failed\n");   break;
-                case WEATHER_ERR_NO_JSON: printf("No JSON in response\n");   break;
-                case WEATHER_ERR_PARSE:   printf("JSON parse failed\n");     break;
-                case WEATHER_ERR_MISSING: printf("Missing expected field\n"); break;
-            }
-        }
+//         if (result == WEATHER_OK)
+//         {
+//             printf("Stack HWM: %d words\n", uxTaskGetStackHighWaterMark(NULL));
+//             for (int i = 0; i < 3; i++)
+//             {
+//                 char line[24];
+//                 snprintf(line, sizeof(line), "D%d %dF/%dF", i+1, temps_max[i], temps_min[i]);
+//                 draw_string(10, 55 + (i * 20), line, ST7735_BLACK, ST7735_WHITE, 1);
+//             }
+//         }
+//         else
+//         {
+//             switch (result) {
+//                 case WEATHER_ERR_HTTP:    printf("HTTP request failed\n");   break;
+//                 case WEATHER_ERR_NO_JSON: printf("No JSON in response\n");   break;
+//                 case WEATHER_ERR_PARSE:   printf("JSON parse failed\n");     break;
+//                 case WEATHER_ERR_MISSING: printf("Missing expected field\n"); break;
+//             }
+//         }
 
-        printf("Sleeping...\n\n");
-        vTaskDelay(pdMS_TO_TICKS(FETCH_INTERVAL_MS));
-    }
+//         printf("Sleeping...\n\n");
+//         vTaskDelay(pdMS_TO_TICKS(FETCH_INTERVAL_MS));
+//     }
 
-    cyw43_arch_deinit();
-    return 0;
-}
+//     cyw43_arch_deinit();
+// }
 
 err_t my_recv_fn(void *arg, struct altcp_pcb *conn, struct pbuf *p, err_t err)
 {

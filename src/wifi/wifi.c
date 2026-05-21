@@ -1,7 +1,6 @@
 #include "wifi/wifi.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
 
 void wifi_task(void *pvParameters) {
     printf("Starting WTTR.in Pico W client...\n");
@@ -53,7 +52,6 @@ void wifi_task(void *pvParameters) {
                 printf("Reconnecting failed, trying a few more times..\n");
                 vTaskDelay(pdMS_TO_TICKS(5000));
             }
-            vTaskDelay(pdMS_TO_TICKS(20000));
         }
     }
 }
