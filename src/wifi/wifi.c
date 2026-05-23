@@ -2,6 +2,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+EventGroupHandle_t wifi_group;
+
 void wifi_task(void *pvParameters) {
     printf("Starting WTTR.in Pico W client...\n");
 

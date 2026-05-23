@@ -1,6 +1,7 @@
 #ifndef WIFI_H 
 #define WIFI_H
 #include "pico/cyw43_arch.h"
+#include "FreeRTOS.h"
 #include "event_groups.h"
 
 #define WIFI_CONNECTED_BIT          0x01

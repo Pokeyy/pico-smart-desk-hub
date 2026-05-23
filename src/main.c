@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "hardware/spi.h"
-#include "hardware/gpio.h"
 #include "drivers/ST7735_TFT.h"
 //#include "demos/RTC/rtc.h"
 #include "weather/weather.h"
@@ -10,6 +8,7 @@
 #include "task.h"
 #include "timers.h"
 #include "wifi/wifi.h"
+#include "display/display_tasks.h"
 
 #define BUTTON 14
 
@@ -60,10 +59,16 @@ int main() {
         printf("Event group for Wi-Fi task created successfully!\n");
     }
 
+    weather_queue = xQueueCreate(1, sizeof(weather_data_t));
+     if (weather_queue == NULL) {
+        panic("Failed to create weather queue\n");
+     }
 
-    BaseType_t wifi_task = xTaskCreate(wifi_task, "WiFiTask", 4096, NULL, 1, NULL);
-    BaseType_t result = xTaskCreate(weather_task, "WeatherTask", 4096, NULL, 1, NULL);
-    printf("xTaskCreate result: %d\n", result);  // 1 = success
+    // idk where to put this
+    BaseType_t draw_screens_result = xTaskCreate(draw_screens_task, "static weather", 4096, NULL, 1, &xDisplayTaskHandle);
+    BaseType_t wifi_result = xTaskCreate(wifi_task, "WiFiTask", 4096, NULL, 2, NULL);
+    BaseType_t weather_result = xTaskCreate(weather_task, "WeatherTask", 4096, NULL, 2, NULL);
+    printf("xTaskCreate result: %d\n", weather_result);  // 1 = success
     printf("task created, starting scheduler\n");
     vTaskStartScheduler();
     while(true);

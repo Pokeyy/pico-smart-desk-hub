@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include "hardware/gpio.h"
 
 // To Do List:
 // Adapt for all screen tab types
@@ -98,7 +99,7 @@
 #endif
 
 #ifndef SPI_ST7735_LEDA
-    #define SPI_ST7735_LEDA                 16
+    #define SPI_ST7735_LEDA                 20
 #endif
 
 #ifndef SPI_ST7735_MOSI                                // unsure if needs to be defined

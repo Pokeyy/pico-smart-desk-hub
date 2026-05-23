@@ -10,9 +10,11 @@
 #include "wifi/wifi.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "display/display_tasks.h"
 
 static char buffer_weather[2048];
 static int buffer_index = 0;
+QueueHandle_t weather_queue;
 
 void weather_task(void *pvParameters) {
     int attempts;
@@ -23,6 +25,9 @@ void weather_task(void *pvParameters) {
             weather_data_t weather_data;
             if (fetch_weather(&weather_data) == WEATHER_OK) {
                 xQueueOverwrite(weather_queue, &weather_data);
+                printf("Notifying display task\n");
+                printf("xDisplayTaskHandle: %p\n", xDisplayTaskHandle);
+                xTaskNotifyGive(xDisplayTaskHandle);
                 break;
             }
             else {
@@ -106,7 +111,7 @@ weather_err_t fetch_weather(weather_data_t *data)
 
     
     cJSON_Delete(root);
-    return 0;  // don't use `result` from http call — it may be non-zero on clean close
+    return WEATHER_OK;  // don't use `result` from http call — it may be non-zero on clean close
 }
 
 // void draw_weather_task(void *pvParameters)
