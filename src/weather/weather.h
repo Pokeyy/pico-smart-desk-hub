@@ -28,6 +28,7 @@ typedef enum {
 typedef struct {
     int temps_max[3];
     int temps_min[3];
+    char temps_days[3][10];
 } weather_data_t;
 
 extern QueueHandle_t weather_queue;

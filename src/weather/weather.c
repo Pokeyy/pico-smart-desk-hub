@@ -11,6 +11,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "display/display_tasks.h"
+#include <time.h>
 
 static char buffer_weather[2048];
 static int buffer_index = 0;
@@ -87,10 +88,11 @@ weather_err_t fetch_weather(weather_data_t *data)
         return WEATHER_ERR_MISSING;
     }
 
+    cJSON *timeArr = cJSON_GetObjectItem(daily, "time");
     cJSON *maxArr = cJSON_GetObjectItem(daily, "temperature_2m_max");
     cJSON *minArr = cJSON_GetObjectItem(daily, "temperature_2m_min");
 
-    if (!cJSON_IsArray(maxArr) || !cJSON_IsArray(minArr))
+    if (!cJSON_IsArray(maxArr) || !cJSON_IsArray(minArr) || !cJSON_IsArray(timeArr))
     {
         printf("temperature arrays missing\n");
         cJSON_Delete(root);
@@ -99,73 +101,45 @@ weather_err_t fetch_weather(weather_data_t *data)
 
     for (int i = 0; i < 3; i++)
     {
+        cJSON *timeItem = cJSON_GetArrayItem(timeArr, i);
         cJSON *maxItem = cJSON_GetArrayItem(maxArr, i);
         cJSON *minItem = cJSON_GetArrayItem(minArr, i);
+
+        if (cJSON_IsString(timeItem) && timeItem->valuestring) {
+            int year, month, day;
+            sscanf(timeItem->valuestring, "%d-%d-%d", &year, &month, &day);
+
+            struct tm t = {0};
+            t.tm_year = year - 1900;
+            t.tm_mon = month - 1;
+            t.tm_mday = day;
+            mktime(&t);
+
+            const char *day_names[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+            if (i == 0) {
+                strncpy(data->temps_days[i], "Today", sizeof(data->temps_days[i]));
+            }
+            else {
+                strncpy(data->temps_days[i], day_names[t.tm_wday], sizeof(data->temps_days[i]));
+            }
+        }
+        else {
+            strncpy(data->temps_days[i], "IDK", sizeof(data->temps_days[i]));
+        }
+
+
 
         // Open-Meteo returns numbers, not strings
         data->temps_max[i] = cJSON_IsNumber(maxItem) ? (int)maxItem->valuedouble : -1;
         data->temps_min[i] = cJSON_IsNumber(minItem) ? (int)minItem->valuedouble : -1;
 
-        printf("Day %d: High %dF / Low %dF\n", i, data->temps_max[i], data->temps_min[i]);
+        printf("%s: High %dF / Low %dF\n", data->temps_days[i], data->temps_max[i], data->temps_min[i]);
     }
 
     
     cJSON_Delete(root);
     return WEATHER_OK;  // don't use `result` from http call — it may be non-zero on clean close
 }
-
-// void draw_weather_task(void *pvParameters)
-// {
-//     printf("the_weather called\n");
-//     int temps_max[3], temps_min[3];
-//     char temp_str[16];
-
-//     draw_weather_screen();
-//     xEventGroupWaitBits(wifi_group, 0x01, pdFALSE, pdTRUE, portMAX_DELAY);
-//     while (true)
-//     {
-
-//         int attempt = 0;
-//         int result = -1;
-
-
-//         draw_string(5, 100, "Updating...", ST7735_BLACK, ST7735_WHITE, 1);
-//         while (attempt < 5)
-//         {
-//             result = fetch_weather(data->temps_max, temps_min);
-//             if (result == WEATHER_OK)
-//                 break;
-//             attempt++;
-//             if (attempt < 5) vTaskDelay(pdMS_TO_TICKS(2000)); // only sleep if actually retrying
-//         }
-//         fill_rectangle(5, 100, 85, 9, ST7735_WHITE);
-
-//         if (result == WEATHER_OK)
-//         {
-//             printf("Stack HWM: %d words\n", uxTaskGetStackHighWaterMark(NULL));
-//             for (int i = 0; i < 3; i++)
-//             {
-//                 char line[24];
-//                 snprintf(line, sizeof(line), "D%d %dF/%dF", i+1, temps_max[i], temps_min[i]);
-//                 draw_string(10, 55 + (i * 20), line, ST7735_BLACK, ST7735_WHITE, 1);
-//             }
-//         }
-//         else
-//         {
-//             switch (result) {
-//                 case WEATHER_ERR_HTTP:    printf("HTTP request failed\n");   break;
-//                 case WEATHER_ERR_NO_JSON: printf("No JSON in response\n");   break;
-//                 case WEATHER_ERR_PARSE:   printf("JSON parse failed\n");     break;
-//                 case WEATHER_ERR_MISSING: printf("Missing expected field\n"); break;
-//             }
-//         }
-
-//         printf("Sleeping...\n\n");
-//         vTaskDelay(pdMS_TO_TICKS(FETCH_INTERVAL_MS));
-//     }
-
-//     cyw43_arch_deinit();
-// }
 
 err_t my_recv_fn(void *arg, struct altcp_pcb *conn, struct pbuf *p, err_t err)
 {
