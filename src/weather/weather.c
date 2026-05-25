@@ -28,7 +28,7 @@ void weather_task(void *pvParameters) {
                 xQueueOverwrite(weather_queue, &weather_data);
                 printf("Notifying display task\n");
                 printf("xDisplayTaskHandle: %p\n", xDisplayTaskHandle);
-                xTaskNotifyGive(xDisplayTaskHandle);
+                //xTaskNotifyGive(xDisplayTaskHandle);
                 break;
             }
             else {

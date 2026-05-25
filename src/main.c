@@ -22,7 +22,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     return true;
 }
 
-void button_callback(uint gpio, uint32_t events) {
+void button_callback1(uint gpio, uint32_t events) {
     led_value = 1 - led_value;
     gpio_put(25, led_value);
 }
@@ -37,8 +37,10 @@ int main() {
     }
     sleep_ms(50);
     
-    
+   
+
     st7735_spi_init();
+    input_init();
 
     gpio_init(25);
     gpio_set_dir(25, GPIO_OUT);
