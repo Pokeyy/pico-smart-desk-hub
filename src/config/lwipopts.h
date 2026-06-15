@@ -1,5 +1,6 @@
 #ifndef _LWIPOPTS_H
 #define _LWIPOPTS_H
+#include <stdint.h>
 
 // Generally you would define your own explicit list of lwIP options
 // (see https://www.nongnu.org/lwip/2_1_x/group__lwip__opts.html)
@@ -26,6 +27,8 @@
 #ifndef MEM_SIZE
 #define MEM_SIZE                    4000
 #endif
+// Increase the number of concurrent timeouts
+#define MEMP_NUM_SYS_TIMEOUT        16
 #define MEMP_NUM_TCP_SEG            32
 #define MEMP_NUM_ARP_QUEUE          10
 #define PBUF_POOL_SIZE              24
@@ -95,9 +98,10 @@
 // SNTP STUFF
 #define LWIP_SNTP                   1
 #define SNTP_SERVER_DNS             1
-#define SNTP_DEFAULT_SERVER         "poo.ntp.org"
+#define SNTP_DEFAULT_SERVER         "pool.ntp.org"
 #define SNTP_UPDATE_DELAY           360000
-#define SNTP_SET_SYSTEM_TIME(sec)   set_system_time(sec)
+void set_system_time(uint32_t sec); 
+#define SNTP_SET_SYSTEM_TIME(sec) set_system_time(sec)
 
 /* TCP WND must be at least 16 kb to match TLS record size
    or you will get a warning "altcp_tls: TCP_WND is smaller than the RX decrypion buffer, connection RX might stall!" */

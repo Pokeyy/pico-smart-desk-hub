@@ -55,12 +55,12 @@ add_executable(ST7735_PICO
     src/main.c 
     src/drivers/ST7735_TFT.c 
     src/drivers/fonts.c 
-    demos/RTC/rtc.c
     src/weather/weather.c
     src/lib/http_client_util.c
     src/lib/cJSON.c
     src/wifi/wifi.c
     src/display/display_tasks.c
+    src/clock/clock.c
 ) 
 
 #target_compile_definitions(ST7735_PICO PRIVATE PICO_ENTER_USB_BOOT_ON_EXIT=1)

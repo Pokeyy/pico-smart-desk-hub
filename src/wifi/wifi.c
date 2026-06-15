@@ -1,8 +1,7 @@
 #include "wifi/wifi.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "pico/aon_timer.h"
-#include "lwip/apps/sntp.h"
+#include "clock/clock.h"
 
 EventGroupHandle_t wifi_group;
 
@@ -22,8 +21,6 @@ void wifi_task(void *pvParameters) {
             printf("cy43 failed to intiialize.. trying again\n");
             vTaskDelay(pdMS_TO_TICKS(3000));
         }
-        
-        
     }
 
     if(init_success == 0) {
@@ -40,6 +37,12 @@ void wifi_task(void *pvParameters) {
             }
     xEventGroupSetBits(wifi_group, 0x01);
     printf("Wi-Fi connected!\n");
+
+    // SNTP CONFIG
+    sntp_setservername(0, SNTP_DEFAULT_SERVER);
+    clock_init();
+    printf("SNTP Initialized, waiting for time sync\n");
+
 
     
     while (true) {

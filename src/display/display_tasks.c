@@ -1,6 +1,7 @@
 #include "display/display_tasks.h"
 #include "drivers/ST7735_TFT.h"
 #include "weather/weather.h"
+#include "clock/clock.h"
 
 
 TaskHandle_t xDisplayTaskHandle = NULL;
@@ -62,7 +63,8 @@ void draw_screens_task (void *pvParameters) {
                     printf("weather screen drawn\n");
                     break;
                 case SCREEN_CLOCK:
-                    // draw time zone 
+                    printf("drawing clock screen\n");
+                    draw_clock_screen();
                     break;
             }
         }
@@ -80,10 +82,21 @@ void draw_screens_task (void *pvParameters) {
                 }
                 break;
             case SCREEN_CLOCK:
-                // fetch rtc data
+                struct tm current_time;
+                aon_timer_get_time_calendar(&current_time);
+
+                char time_str[16];
+                snprintf(time_str, sizeof(time_str), "%02d:%02d:%02d", current_time.tm_hour, current_time.tm_min, current_time.tm_sec);
+                draw_string(30, 55, time_str, ST7735_BLACK, ST7735_WHITE, 2);
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                
                 break;
         }
     }
+}
+
+void draw_clock_screen() {
+    draw_string(10, 10, "LE CLOCK", ST7735_BLUE, ST7735_WHITE, 3);
 }
 
 void draw_weather_screen() {

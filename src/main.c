@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "drivers/ST7735_TFT.h"
-//#include "demos/RTC/rtc.h"
 #include "weather/weather.h"
 #include "pico/cyw43_arch.h"
 #include "FreeRTOS.h"
@@ -9,6 +8,7 @@
 #include "timers.h"
 #include "wifi/wifi.h"
 #include "display/display_tasks.h"
+#include "clock/clock.h"
 
 #define BUTTON 14
 

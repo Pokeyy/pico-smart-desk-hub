@@ -31,6 +31,8 @@ void draw_screens_task (void *pvParameters);
 
 void draw_weather_screen();
 
+void draw_clock_screen();
+
 void draw_main_screen();
 
 #endif
