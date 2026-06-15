@@ -1,6 +1,8 @@
 #include "wifi/wifi.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "pico/aon_timer.h"
+#include "lwip/apps/sntp.h"
 
 EventGroupHandle_t wifi_group;
 

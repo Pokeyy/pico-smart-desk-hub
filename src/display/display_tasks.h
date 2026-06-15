@@ -16,7 +16,7 @@
 typedef enum {
     SCREEN_MAIN         =   0,
     SCREEN_WEATHER      =   1,
-    //SCREEN_CLOCK        =   2,
+    SCREEN_CLOCK        =   2,
     //SCREEN_MUSIC        =   3,
     SCREEN_COUNT            
 } screen_type_t;

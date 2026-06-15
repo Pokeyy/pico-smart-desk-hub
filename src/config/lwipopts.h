@@ -92,6 +92,13 @@
 #define SLIP_DEBUG                  LWIP_DBG_OFF
 #define DHCP_DEBUG                  LWIP_DBG_OFF
 
+// SNTP STUFF
+#define LWIP_SNTP                   1
+#define SNTP_SERVER_DNS             1
+#define SNTP_DEFAULT_SERVER         "poo.ntp.org"
+#define SNTP_UPDATE_DELAY           360000
+#define SNTP_SET_SYSTEM_TIME(sec)   set_system_time(sec)
+
 /* TCP WND must be at least 16 kb to match TLS record size
    or you will get a warning "altcp_tls: TCP_WND is smaller than the RX decrypion buffer, connection RX might stall!" */
 #undef TCP_WND
@@ -100,8 +107,8 @@
 #define LWIP_ALTCP 1
 
 // If you don't want to use TLS (just a http request) you can avoid linking to mbedtls and remove the following
-#define LWIP_ALTCP_TLS           1
-#define LWIP_ALTCP_TLS_MBEDTLS   1
+#define LWIP_ALTCP_TLS              1
+#define LWIP_ALTCP_TLS_MBEDTLS      1
 
 // Note bug in lwip with LWIP_ALTCP and LWIP_DEBUG
 // https://savannah.nongnu.org/bugs/index.php?62159

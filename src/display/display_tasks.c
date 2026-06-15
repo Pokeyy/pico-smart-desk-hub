@@ -61,6 +61,9 @@ void draw_screens_task (void *pvParameters) {
                     draw_weather_screen();
                     printf("weather screen drawn\n");
                     break;
+                case SCREEN_CLOCK:
+                    // draw time zone 
+                    break;
             }
         }
         switch(current_screen) {
@@ -75,9 +78,9 @@ void draw_screens_task (void *pvParameters) {
                     snprintf(line, sizeof(line), "%s %dF/%dF", weather_data.temps_days[i], weather_data.temps_max[i], weather_data.temps_min[i]);
                     draw_string(2, 55 + (i * 20), line, ST7735_BLACK, ST7735_WHITE, 1);
                 }
-                // else {
-                //     printf("queue empty\n");
-                // }
+                break;
+            case SCREEN_CLOCK:
+                // fetch rtc data
                 break;
         }
     }

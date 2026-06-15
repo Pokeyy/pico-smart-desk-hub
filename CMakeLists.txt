@@ -85,11 +85,13 @@ target_link_libraries(ST7735_PICO
         pico_stdlib
         pico_util
         hardware_spi
+        pico_aon_timer
         pico_cyw43_arch_lwip_threadsafe_background
         pico_lwip_http
         pico_lwip_mbedtls
         pico_mbedtls
         FreeRTOS-Kernel-Heap4
+        pico_lwip_sntp
         )
 
 
