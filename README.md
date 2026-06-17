@@ -4,9 +4,9 @@
 - [Overview](#overview)
 - [System Architecture](#system-Architecture)
 - [Real Examples](#real-examples)
-- [Hardware & Dependicies](#hardware-&-dependicies)
+- [Hardware & Dependicies](#hardware--dependicies)
 - [Setting it up](#setting-it-up)
-- [Credits & References](#credits-&-references)
+- [Credits & References](#credits--references)
 
 
 ## Overview
