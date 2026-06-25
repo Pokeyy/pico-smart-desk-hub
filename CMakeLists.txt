@@ -61,6 +61,7 @@ add_executable(ST7735_PICO
     src/wifi/wifi.c
     src/display/display_tasks.c
     src/clock/clock.c
+    src/ble/ble.c
 ) 
 
 #target_compile_definitions(ST7735_PICO PRIVATE PICO_ENTER_USB_BOOT_ON_EXIT=1)
@@ -78,7 +79,9 @@ target_compile_definitions(ST7735_PICO PRIVATE
         WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
         )
 
-
+pico_btstack_make_gatt_header(ST7735_PICO PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/src/ble/profile.gatt"
+)
 
 # Add the standard library to the build
 target_link_libraries(ST7735_PICO
@@ -92,15 +95,19 @@ target_link_libraries(ST7735_PICO
         pico_mbedtls
         FreeRTOS-Kernel-Heap4
         pico_lwip_sntp
+        pico_btstack_ble
+        pico_btstack_cyw43
         )
 
 
 pico_add_extra_outputs(ST7735_PICO)
 
 
-target_include_directories(ST7735_PICO PRIVATE include)
-target_include_directories(ST7735_PICO PRIVATE src)
-target_include_directories(ST7735_PICO PRIVATE src/config)
+target_include_directories(ST7735_PICO PRIVATE 
+    include
+    src
+    src/config
+)
 
 
 # Ignore warnings from lwip code
